@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: recipe
+  datasource:
+    url: jdbc:postgresql://localhost:5432/recipe
+    username: postgres
+    password:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
