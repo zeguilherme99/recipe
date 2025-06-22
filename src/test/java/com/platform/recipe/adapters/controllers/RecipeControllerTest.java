@@ -48,7 +48,7 @@ class RecipeControllerTest {
               "Some description",
               true,
               "Instructions",
-              List.of(new IngredientRequest("Flour", 200, "g"))
+              List.of(new IngredientRequest(1L,"Flour", 200, "g"))
             )
         ),
         Arguments.of(
@@ -57,7 +57,7 @@ class RecipeControllerTest {
                 "Some description",
                 true,
                 "Instructions",
-                List.of(new IngredientRequest("Flour", 200, "g"))
+                List.of(new IngredientRequest(2L,"Flour", 200, "g"))
             )
         ),
         Arguments.of(
@@ -66,7 +66,7 @@ class RecipeControllerTest {
               "Some description",
               true,
               "  ",
-              List.of(new IngredientRequest("Flour", 200, "g"))
+              List.of(new IngredientRequest(3L,"Flour", 200, "g"))
             )
         ),
         Arguments.of(
@@ -76,8 +76,8 @@ class RecipeControllerTest {
               true,
               "Instructions",
               List.of(
-                  new IngredientRequest("  ", 500, "g"),
-                  new IngredientRequest("Bean", 300, "g")
+                  new IngredientRequest(4L,"  ", 500, "g"),
+                  new IngredientRequest(5L,"Bean", 300, "g")
               )
           )
         ),
@@ -162,8 +162,8 @@ class RecipeControllerTest {
         false,
         "instructions",
         List.of(
-            new IngredientRequest("Brad", 500, "g"),
-            new IngredientRequest("Bean", 300, "g")
+            new IngredientRequest(1L, "Brad", 500, "g"),
+            new IngredientRequest(2L, "Bean", 300, "g")
         )
     );
   }
@@ -175,7 +175,7 @@ class RecipeControllerTest {
     dto.setDescription("Updated Description");
     dto.setVegetarian(true);
     dto.setInstructions("Updated instructions");
-    dto.setIngredients(List.of(new IngredientDto(null, "Sugar", 100, "ml")));
+    dto.setIngredients(List.of(new IngredientDto(null, "Sugar", 100, "g")));
 
     return dto;
   }
