@@ -8,4 +8,5 @@ public interface RecipeService {
   Long create(RecipeDto recipe);
   RecipeDto update(RecipeDto recipe) throws DataNotFoundException;
   void deleteById(Long id) throws DataNotFoundException;
+  RecipeDto findById(Long id) throws DataNotFoundException;
 }

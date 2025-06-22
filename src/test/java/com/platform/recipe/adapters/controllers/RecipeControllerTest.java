@@ -5,14 +5,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.recipe.adapters.controllers.dtos.request.IngredientRequest;
 import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
+import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.IngredientDto;
 import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.services.RecipeService;
@@ -95,13 +98,15 @@ class RecipeControllerTest {
 
   @Test
   void shouldReturnCreatedWithIdSuccessfully() throws Exception {
+    Long id = 42L;
     RecipeRequest recipeRequest = createRequest();
-    when(recipeService.create(any(RecipeDto.class))).thenReturn(42L);
+    RecipeIdResponse expectedResponse = new RecipeIdResponse(id);
+    when(recipeService.create(any(RecipeDto.class))).thenReturn(id);
 
     mockMvc.perform(post("/v1/recipes").contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(recipeRequest)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(42));
+        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
 
     verify(recipeService).create(any(RecipeDto.class));
   }
@@ -110,15 +115,15 @@ class RecipeControllerTest {
   void shouldUpdateRecipeSuccessfully() throws Exception {
     RecipeRequest request = createRequest();
     RecipeDto dto = createDto();
+    RecipeResponse expectedResponse = createResponseFromDto(dto);
+
     when(recipeService.update(any(RecipeDto.class))).thenReturn(dto);
 
     mockMvc.perform(put("/v1/recipes/{id}", 123L)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(123L))
-        .andExpect(jsonPath("$.title").value("Updated Title"))
-        .andExpect(jsonPath("$.vegetarian").value(true));
+        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
 
     verify(recipeService).update(any(RecipeDto.class));
   }
@@ -153,6 +158,31 @@ class RecipeControllerTest {
         .andExpect(status().isNoContent());
 
     verify(recipeService).deleteById(id);
+  }
+
+  @Test
+  void shouldFindAndReturnRecipeSuccessfully() throws Exception {
+    RecipeDto dto = createDto();
+    RecipeResponse expectedResponse = createResponseFromDto(dto);
+
+    when(recipeService.findById(dto.getId())).thenReturn(dto);
+
+    mockMvc.perform(get("/v1/recipes/{id}", dto.getId()))
+        .andExpect(status().isOk())
+        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+  }
+
+  private RecipeResponse createResponseFromDto(RecipeDto dto) {
+    return new RecipeResponse(
+        dto.getId(),
+        dto.getTitle(),
+        dto.getDescription(),
+        dto.isVegetarian(),
+        dto.getInstructions(),
+        dto.getIngredients(),
+        dto.getCreatedAt(),
+        dto.getUpdatedAt()
+    );
   }
 
   private RecipeRequest createRequest() {

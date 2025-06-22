@@ -1,8 +1,8 @@
 package com.platform.recipe.adapters.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
 import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.exceptions.DataNotFoundException;
@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -72,5 +73,18 @@ public class RecipeController {
 
     log.info("Recipe with id [{}] successfully deleted", id);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<RecipeResponse> findById(
+      @PathVariable Long id
+  ) throws DataNotFoundException {
+    log.info("Received request to find recipe [{}]", id);
+
+    RecipeDto recipeDto = recipeService.findById(id);
+    RecipeResponse response = objectMapper.convertValue(recipeDto, RecipeResponse.class);
+
+    log.info("Recipe with id [{}] successfully found", id);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

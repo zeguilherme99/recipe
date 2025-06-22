@@ -31,8 +31,7 @@ public class RecipeServiceImp implements RecipeService {
   public RecipeDto update(RecipeDto recipe) throws DataNotFoundException {
     log.info("Preparing to update recipe id [{}]", recipe.getId());
 
-    Recipe entity = recipeJpaRepository.findById(recipe.getId())
-        .orElseThrow(() -> new DataNotFoundException(ErrorCode.RECIPE_NOT_FOUND));
+    Recipe entity = findRecipeById(recipe.getId());
 
     Timestamp createdAt = entity.getCreatedAt();
     Recipe saved = persistRecipe(recipe);
@@ -46,6 +45,22 @@ public class RecipeServiceImp implements RecipeService {
     log.info("Preparing to delete recipe id [{}]", id);
     recipeExistsById(id);
     recipeJpaRepository.deleteById(id);
+  }
+
+  @Override
+  public RecipeDto findById(Long id) throws DataNotFoundException {
+    log.info("Preparing to find recipe id [{}]", id);
+
+    Recipe recipe = findRecipeById(id);
+
+    return objectMapper.convertValue(recipe, RecipeDto.class);
+  }
+
+  private Recipe findRecipeById(Long id) throws DataNotFoundException {
+    return recipeJpaRepository.findById(id).orElseThrow(() -> {
+      log.info("Recipe not found id: [{}]", id);
+      return new DataNotFoundException(ErrorCode.RECIPE_NOT_FOUND);
+    });
   }
 
   private void recipeExistsById(Long id) throws DataNotFoundException {

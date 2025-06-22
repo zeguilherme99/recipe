@@ -12,6 +12,7 @@ import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.entities.Ingredient;
 import com.platform.recipe.domain.entities.Recipe;
 import com.platform.recipe.domain.exceptions.DataNotFoundException;
+import com.platform.recipe.domain.exceptions.ErrorCode;
 import com.platform.recipe.domain.repositories.RecipeJpaRepository;
 import java.sql.Timestamp;
 import java.util.List;
@@ -90,15 +91,18 @@ class RecipeServiceImpTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenRecipeNotFoundUpdate() {
+  void shouldThrowDataNotFoundExceptionWhenRecipeNotFoundUpdate() {
     Long id = 99L;
     RecipeDto dto = new RecipeDto();
     dto.setId(id);
 
     when(recipeJpaRepository.findById(id)).thenReturn(Optional.empty());
 
-    assertThrows(DataNotFoundException.class, () -> recipeService.update(dto));
+    DataNotFoundException exception = assertThrows(DataNotFoundException.class, () -> recipeService.update(dto));
+
     verify(recipeJpaRepository, never()).save(any());
+    assertEquals(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+
   }
 
   @Test
@@ -113,14 +117,46 @@ class RecipeServiceImpTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenRecipeNotFoundDelete() {
+  void shouldThrowDataNotFoundExceptionWhenRecipeNotFoundDelete() {
     Long id = 999L;
 
     when(recipeJpaRepository.existsById(id)).thenReturn(false);
 
-    assertThrows(DataNotFoundException.class, () -> recipeService.deleteById(id));
+    DataNotFoundException exception = assertThrows(DataNotFoundException.class, () -> recipeService.deleteById(id));
 
     verify(recipeJpaRepository, never()).deleteById(any());
+    assertEquals(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+  }
+
+  @Test
+  void shouldReturnRecipeDtoWhenFound() throws Exception {
+    Long id = 1L;
+
+    RecipeDto recipeDto = createDto();
+    recipeDto.setId(id);
+    Recipe recipeEntity = createRecipe(recipeDto);
+
+    when(recipeJpaRepository.findById(id)).thenReturn(Optional.of(recipeEntity));
+    when(objectMapper.convertValue(recipeEntity, RecipeDto.class)).thenReturn(recipeDto);
+
+    RecipeDto result = recipeService.findById(id);
+
+    assertEquals(id, result.getId());
+    assertEquals(recipeEntity.getTitle(), result.getTitle());
+    verify(recipeJpaRepository).findById(id);
+  }
+
+  @Test
+  void shouldThrowDataNotFoundExceptionWhenRecipeDoesNotExist() {
+    Long id = 99L;
+    when(recipeJpaRepository.findById(id)).thenReturn(Optional.empty());
+
+    DataNotFoundException exception = assertThrows(
+        DataNotFoundException.class,
+        () -> recipeService.findById(id)
+    );
+
+    assertEquals(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
   }
 
   private RecipeDto createDto() {
