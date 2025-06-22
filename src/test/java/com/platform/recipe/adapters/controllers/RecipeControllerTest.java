@@ -1,7 +1,10 @@
 package com.platform.recipe.adapters.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -99,6 +102,8 @@ class RecipeControllerTest {
             .content(objectMapper.writeValueAsString(recipeRequest)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(42));
+
+    verify(recipeService).create(any(RecipeDto.class));
   }
 
   @Test
@@ -114,6 +119,8 @@ class RecipeControllerTest {
         .andExpect(jsonPath("$.id").value(123L))
         .andExpect(jsonPath("$.title").value("Updated Title"))
         .andExpect(jsonPath("$.vegetarian").value(true));
+
+    verify(recipeService).update(any(RecipeDto.class));
   }
 
   @ParameterizedTest
@@ -123,6 +130,8 @@ class RecipeControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
+
+    verify(recipeService, never()).update(any(RecipeDto.class));
   }
 
   @ParameterizedTest
@@ -132,6 +141,18 @@ class RecipeControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
         .andExpect(status().isBadRequest());
+
+    verify(recipeService, never()).create(any(RecipeDto.class));
+  }
+
+  @Test
+  void shouldDeleteRecipeSuccessfully() throws Exception {
+    Long id = 1L;
+
+    mockMvc.perform(delete("/v1/recipes/{id}", id))
+        .andExpect(status().isNoContent());
+
+    verify(recipeService).deleteById(id);
   }
 
   private RecipeRequest createRequest() {

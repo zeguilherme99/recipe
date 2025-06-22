@@ -41,6 +41,20 @@ public class RecipeServiceImp implements RecipeService {
     return recipeDto;
   }
 
+  @Override
+  public void deleteById(Long id) throws DataNotFoundException {
+    log.info("Preparing to delete recipe id [{}]", id);
+    recipeExistsById(id);
+    recipeJpaRepository.deleteById(id);
+  }
+
+  private void recipeExistsById(Long id) throws DataNotFoundException {
+    if (!recipeJpaRepository.existsById(id)) {
+      log.info("Recipe not found id [{}]", id);
+      throw new DataNotFoundException(ErrorCode.RECIPE_NOT_FOUND);
+    }
+  }
+
   private Recipe persistRecipe(RecipeDto recipe) {
     Recipe entity = objectMapper.convertValue(recipe, Recipe.class);
     entity.getIngredients().forEach(i -> i.setRecipe(entity));

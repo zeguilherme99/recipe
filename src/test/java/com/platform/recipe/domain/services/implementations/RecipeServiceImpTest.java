@@ -90,7 +90,7 @@ class RecipeServiceImpTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenRecipeNotFound() {
+  void shouldThrowExceptionWhenRecipeNotFoundUpdate() {
     Long id = 99L;
     RecipeDto dto = new RecipeDto();
     dto.setId(id);
@@ -99,6 +99,28 @@ class RecipeServiceImpTest {
 
     assertThrows(DataNotFoundException.class, () -> recipeService.update(dto));
     verify(recipeJpaRepository, never()).save(any());
+  }
+
+  @Test
+  void shouldDeleteRecipeSuccessfully() throws DataNotFoundException {
+    Long id = 1L;
+
+    when(recipeJpaRepository.existsById(id)).thenReturn(true);
+
+    recipeService.deleteById(id);
+
+    verify(recipeJpaRepository).deleteById(id);
+  }
+
+  @Test
+  void shouldThrowExceptionWhenRecipeNotFoundDelete() {
+    Long id = 999L;
+
+    when(recipeJpaRepository.existsById(id)).thenReturn(false);
+
+    assertThrows(DataNotFoundException.class, () -> recipeService.deleteById(id));
+
+    verify(recipeJpaRepository, never()).deleteById(any());
   }
 
   private RecipeDto createDto() {

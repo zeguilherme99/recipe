@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -59,5 +60,17 @@ public class RecipeController {
 
     log.info("Recipe with id [{}] successfully updated", id);
     return ResponseEntity.status(HttpStatus.OK).body(response);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> update(
+      @PathVariable Long id
+  ) throws DataNotFoundException {
+    log.info("Received request to delete recipe [{}]", id);
+
+    recipeService.deleteById(id);
+
+    log.info("Recipe with id [{}] successfully deleted", id);
+    return ResponseEntity.noContent().build();
   }
 }
