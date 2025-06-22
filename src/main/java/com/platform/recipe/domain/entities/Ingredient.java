@@ -1,5 +1,6 @@
 package com.platform.recipe.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ public class Ingredient {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "id", unique = true, updatable = false)
+  @Column(name = "id", unique = true)
   private Long id;
 
   @Column(name = "name", nullable = false)
@@ -28,10 +29,11 @@ public class Ingredient {
   @Column(name = "quantity", nullable = false)
   private int quantity;
 
-  @Column(name = "unit", nullable = false)
+  @Column(name = "unit")
   private String unit;
 
   @ManyToOne
   @JoinColumn(name = "recipe_id")
+  @JsonIgnore
   private Recipe recipe;
 }

@@ -1,4 +1,4 @@
-package com.platform.recipe.adapters.controllers.dtos;
+package com.platform.recipe.adapters.controllers.dtos.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -17,10 +17,10 @@ import lombok.Setter;
 public class RecipeRequest {
 
   @NotBlank(message = "Title is required.")
-  @Size(min = 3, max = 255)
+  @Size(min = 3, max = 255, message = "Title size must be between 3 and 255")
   private String title;
 
-  @Size(min = 3, max = 255)
+  @Size(min = 3, max = 255, message ="Description size must be between 3 and 255")
   private String description;
 
   private boolean vegetarian;

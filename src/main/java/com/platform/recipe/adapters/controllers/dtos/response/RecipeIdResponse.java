@@ -1,4 +1,4 @@
-package com.platform.recipe.adapters.controllers.dtos;
+package com.platform.recipe.adapters.controllers.dtos.response;
 
 import lombok.Value;
 

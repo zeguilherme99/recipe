@@ -1,4 +1,4 @@
-package com.platform.recipe.adapters.controllers.dtos;
+package com.platform.recipe.adapters.controllers.dtos.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -15,7 +15,7 @@ import lombok.Setter;
 public class IngredientRequest {
 
   @NotBlank(message = "Name is required.")
-  @Size(min = 3, max = 255)
+  @Size(min = 3, max = 255, message = "Name size must be between 3 and 255")
   private String name;
 
   @Positive(message = "Quantity must be bigger than zero")

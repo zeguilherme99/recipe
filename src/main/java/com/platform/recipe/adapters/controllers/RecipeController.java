@@ -1,15 +1,19 @@
 package com.platform.recipe.adapters.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.platform.recipe.adapters.controllers.dtos.RecipeIdResponse;
-import com.platform.recipe.adapters.controllers.dtos.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
+import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.RecipeDto;
+import com.platform.recipe.domain.exceptions.DataNotFoundException;
 import com.platform.recipe.domain.services.RecipeService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +43,21 @@ public class RecipeController {
     log.info("Recipe [{}] successfully created with id [{}]", recipeRequest.getTitle(), id);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<RecipeResponse> update(
+      @PathVariable Long id,
+      @Valid @RequestBody RecipeRequest recipeRequest
+  ) throws DataNotFoundException {
+    log.info("Received request to update recipe [{}]", id);
+    RecipeDto recipeDto = objectMapper.convertValue(recipeRequest, RecipeDto.class);
+    recipeDto.setId(id);
+
+    RecipeDto result = recipeService.update(recipeDto);
+    RecipeResponse response = objectMapper.convertValue(result, RecipeResponse.class);
+
+    log.info("Recipe with id [{}] successfully updated", id);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

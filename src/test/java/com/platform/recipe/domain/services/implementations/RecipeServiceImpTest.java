@@ -1,6 +1,8 @@
 package com.platform.recipe.domain.services.implementations;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -9,8 +11,11 @@ import com.platform.recipe.domain.dtos.IngredientDto;
 import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.entities.Ingredient;
 import com.platform.recipe.domain.entities.Recipe;
+import com.platform.recipe.domain.exceptions.DataNotFoundException;
 import com.platform.recipe.domain.repositories.RecipeJpaRepository;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,6 +37,71 @@ class RecipeServiceImpTest {
   @Test
   void shouldCreateRecipeAndReturnId() {
 
+    RecipeDto recipeDto = createDto();
+    Recipe entity = createRecipe(recipeDto);
+
+    Recipe saved = new Recipe();
+    saved.setId(1L);
+
+    when(objectMapper.convertValue(recipeDto, Recipe.class)).thenReturn(entity);
+    when(recipeJpaRepository.save(entity)).thenReturn(saved);
+
+    Long returnedId = recipeService.create(recipeDto);
+
+    assertEquals(1L, returnedId);
+    verify(recipeJpaRepository).save(entity);
+    verify(objectMapper).convertValue(recipeDto, Recipe.class);
+  }
+
+  @Test
+  void shouldUpdateRecipeSuccessfully() throws DataNotFoundException {
+    Long id = 1L;
+    RecipeDto dto = new RecipeDto();
+    dto.setId(id);
+    dto.setTitle("Updated");
+    dto.setIngredients(List.of());
+
+    Recipe existing = new Recipe();
+    existing.setId(id);
+    existing.setCreatedAt(Timestamp.valueOf("2024-01-01 10:00:00"));
+
+    Recipe updated = new Recipe();
+    updated.setId(id);
+    updated.setCreatedAt(existing.getCreatedAt());
+
+    RecipeDto mappedResult = new RecipeDto();
+    mappedResult.setId(id);
+    mappedResult.setTitle("Updated");
+    mappedResult.setCreatedAt(existing.getCreatedAt());
+
+    when(recipeJpaRepository.findById(id)).thenReturn(Optional.of(existing));
+    when(objectMapper.convertValue(dto, Recipe.class)).thenReturn(updated);
+    when(recipeJpaRepository.save(any())).thenReturn(updated);
+    when(objectMapper.convertValue(updated, RecipeDto.class)).thenReturn(mappedResult);
+
+    RecipeDto result = recipeService.update(dto);
+
+    assertNotNull(result);
+    assertEquals(result.getId(), id);
+    assertEquals(result.getCreatedAt(), existing.getCreatedAt());
+    assertEquals(result.getTitle(), "Updated");
+
+    verify(recipeJpaRepository).save(any(Recipe.class));
+  }
+
+  @Test
+  void shouldThrowExceptionWhenRecipeNotFound() {
+    Long id = 99L;
+    RecipeDto dto = new RecipeDto();
+    dto.setId(id);
+
+    when(recipeJpaRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(DataNotFoundException.class, () -> recipeService.update(dto));
+    verify(recipeJpaRepository, never()).save(any());
+  }
+
+  private RecipeDto createDto() {
     RecipeDto recipeDto = new RecipeDto();
     recipeDto.setTitle("Feijoada");
     recipeDto.setDescription("Brazilian food");
@@ -43,6 +113,10 @@ class RecipeServiceImpTest {
 
     recipeDto.setIngredients(List.of(firstIngredientDto, secondIngredientDto));
 
+    return recipeDto;
+  }
+
+  private Recipe createRecipe(RecipeDto recipeDto) {
     Recipe entity = new Recipe();
     entity.setTitle(recipeDto.getTitle());
     entity.setDescription(recipeDto.getDescription());
@@ -50,30 +124,19 @@ class RecipeServiceImpTest {
     entity.setInstructions(recipeDto.getInstructions());
 
     Ingredient firstIngredient = new Ingredient();
-    firstIngredient.setName(firstIngredientDto.getName());
-    firstIngredient.setQuantity(firstIngredientDto.getQuantity());
-    firstIngredient.setUnit(firstIngredientDto.getUnit());
+    firstIngredient.setName(recipeDto.getIngredients().get(0).getName());
+    firstIngredient.setQuantity(recipeDto.getIngredients().get(0).getQuantity());
+    firstIngredient.setUnit(recipeDto.getIngredients().get(0).getUnit());
 
     Ingredient secondIngredient = new Ingredient();
-    secondIngredient.setName(secondIngredientDto.getName());
-    secondIngredient.setQuantity(secondIngredientDto.getQuantity());
-    secondIngredient.setUnit(secondIngredientDto.getUnit());
+    secondIngredient.setName(recipeDto.getIngredients().get(1).getName());
+    secondIngredient.setQuantity(recipeDto.getIngredients().get(1).getQuantity());
+    secondIngredient.setUnit(recipeDto.getIngredients().get(1).getUnit());
 
     entity.setIngredients(List.of(firstIngredient, secondIngredient));
 
-    Recipe saved = new Recipe();
-    saved.setId(1L);
-
     firstIngredient.setRecipe(entity);
     secondIngredient.setRecipe(entity);
-
-    when(objectMapper.convertValue(recipeDto, Recipe.class)).thenReturn(entity);
-    when(recipeJpaRepository.save(entity)).thenReturn(saved);
-
-    Long returnedId = recipeService.create(recipeDto);
-
-    assertEquals(1L, returnedId);
-    verify(recipeJpaRepository).save(entity);
-    verify(objectMapper).convertValue(recipeDto, Recipe.class);
+    return entity;
   }
 }
