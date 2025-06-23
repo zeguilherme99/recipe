@@ -2,6 +2,8 @@ package com.platform.recipe.domain.services.implementations;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,15 +15,23 @@ import com.platform.recipe.domain.entities.Ingredient;
 import com.platform.recipe.domain.entities.Recipe;
 import com.platform.recipe.domain.exceptions.DataNotFoundException;
 import com.platform.recipe.domain.exceptions.ErrorCode;
+import com.platform.recipe.domain.repositories.IngredientJpaRepository;
 import com.platform.recipe.domain.repositories.RecipeJpaRepository;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceImpTest {
@@ -31,6 +41,9 @@ class RecipeServiceImpTest {
 
   @Mock
   private RecipeJpaRepository recipeJpaRepository;
+
+  @Mock
+  private IngredientJpaRepository ingredientJpaRepository;
 
   @Mock
   private ObjectMapper objectMapper;
@@ -152,11 +165,108 @@ class RecipeServiceImpTest {
     when(recipeJpaRepository.findById(id)).thenReturn(Optional.empty());
 
     DataNotFoundException exception = assertThrows(
-        DataNotFoundException.class,
-        () -> recipeService.findById(id)
+      DataNotFoundException.class,
+      () -> recipeService.findById(id)
     );
 
     assertEquals(ErrorCode.RECIPE_NOT_FOUND, exception.getErrorCode());
+  }
+
+  @Test
+  void shouldSearchWithFiltersAndConvertPage() {
+    Boolean vegetarian = true;
+    int serving = 2;
+    List<String> includedIngredients = List.of("Salt", "Pepper");
+    List<String> excludedIngredients = List.of("Sugar");
+    String instruction = "mix";
+    Instant createdAfter = Instant.parse("2023-01-01T00:00:00Z");
+    Instant createdBefore = Instant.parse("2023-12-31T23:59:59Z");
+    int page = 0;
+    int pageSize = 10;
+    String sort = "createdAt";
+
+    RecipeDto firstRecipeDto = createDto();
+    Recipe firstRecipe = createRecipe(firstRecipeDto);
+    firstRecipe.setId(1L);
+
+    RecipeDto secondRecipeDto = createDto();
+    Recipe secondRecipe = createRecipe(secondRecipeDto);
+    secondRecipe.setId(2L);
+
+    List<Recipe> recipes = List.of(firstRecipe, secondRecipe);
+
+    Page<Recipe> recipePage = new PageImpl<>(recipes, PageRequest.of(page, pageSize, Sort.by(sort).descending()), 2);
+
+    Ingredient firstIngredient = new Ingredient();
+    firstIngredient.setRecipe(firstRecipe);
+    firstIngredient.setQuantity(1);
+    Ingredient secondIngredient = new Ingredient();
+    secondIngredient.setRecipe(secondRecipe);
+    secondIngredient.setQuantity(3);
+
+    List<Ingredient> ingredients = List.of(firstIngredient, secondIngredient);
+
+    when(recipeJpaRepository.searchWithFilters(
+      eq(vegetarian),
+      eq(includedIngredients),
+      eq(excludedIngredients),
+      eq(instruction),
+      eq(createdAfter),
+      eq(createdBefore),
+      any(Pageable.class)
+    )).thenReturn(recipePage);
+
+    when(ingredientJpaRepository.findByRecipeIdIn(List.of(1L, 2L))).thenReturn(ingredients);
+
+    when(objectMapper.convertValue(any(Recipe.class), eq(RecipeDto.class))).thenAnswer(invocation -> {
+      Recipe r = invocation.getArgument(0);
+      RecipeDto dto = new RecipeDto();
+      dto.setId(r.getId());
+      dto.setIngredients(r.getIngredients().stream()
+        .map(i -> {
+          IngredientDto ingredientDto = new IngredientDto();
+          ingredientDto.setQuantity(i.getQuantity());
+          return ingredientDto;
+        }).collect(Collectors.toList())
+      );
+      return dto;
+    });
+
+    Page<RecipeDto> result = recipeService.searchWithFilters(
+      vegetarian,
+      serving,
+      includedIngredients,
+      excludedIngredients,
+      instruction,
+      createdAfter,
+      createdBefore,
+      page,
+      pageSize,
+      sort
+    );
+
+    assertNotNull(result);
+    assertEquals(2, result.getContent().size());
+
+    RecipeDto firstDto = result.getContent().get(0);
+    assertEquals(2, firstDto.getIngredients().get(0).getQuantity());
+
+    RecipeDto secondDto = result.getContent().get(1);
+    assertEquals(6, secondDto.getIngredients().get(0).getQuantity());
+
+    verify(recipeJpaRepository).searchWithFilters(
+      eq(vegetarian),
+      eq(includedIngredients),
+      eq(excludedIngredients),
+      eq(instruction),
+      eq(createdAfter),
+      eq(createdBefore),
+      argThat(pageable -> pageable.getPageNumber() == page
+        && pageable.getPageSize() == pageSize
+        && pageable.getSort().getOrderFor("createdAt").isDescending())
+    );
+
+    verify(ingredientJpaRepository).findByRecipeIdIn(List.of(1L, 2L));
   }
 
   private RecipeDto createDto() {

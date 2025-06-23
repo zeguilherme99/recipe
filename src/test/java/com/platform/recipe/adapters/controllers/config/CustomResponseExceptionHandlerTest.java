@@ -45,7 +45,7 @@ class CustomResponseExceptionHandlerTest {
   void testDataNotFoundException() {
     DataNotFoundException dataNotFoundException = new DataNotFoundException(ErrorCode.INVALID_DATA);
     ResponseEntity<ResponseError.ResponseErrorMessage> responseError = customResponseExceptionHandler
-        .dataNotFoundException(dataNotFoundException);
+      .dataNotFoundException(dataNotFoundException);
 
     HttpStatusCode httpStatusCode = responseError.getStatusCode();
     ResponseError.ResponseErrorMessage responseErrorMessage = responseError.getBody();
@@ -76,7 +76,7 @@ class CustomResponseExceptionHandlerTest {
   void testInvalidDataException() {
     InvalidDataException invalidDataException = new InvalidDataException(ErrorCode.INVALID_DATA);
     ResponseEntity<ResponseError.ResponseErrorMessage> responseError = customResponseExceptionHandler
-        .invalidDataException(invalidDataException);
+      .invalidDataException(invalidDataException);
 
     HttpStatusCode httpStatusCode = responseError.getStatusCode();
     ResponseError.ResponseErrorMessage responseErrorMessage = responseError.getBody();
@@ -92,7 +92,7 @@ class CustomResponseExceptionHandlerTest {
   void testUnexpectedErrorException() {
     UnexpectedErrorException unexpectedErrorException = new UnexpectedErrorException(ErrorCode.UNEXPECTED_ERROR, precedingException);
     ResponseEntity<ResponseError.ResponseErrorMessage> responseError = customResponseExceptionHandler
-        .unexpectedErrorException(unexpectedErrorException);
+      .unexpectedErrorException(unexpectedErrorException);
 
     HttpStatusCode httpStatusCode = responseError.getStatusCode();
     ResponseError.ResponseErrorMessage responseErrorMessage = responseError.getBody();
@@ -106,8 +106,7 @@ class CustomResponseExceptionHandlerTest {
 
   @Test
   void testHandleHttpMessageNotReadable() {
-    HttpMessageNotReadableException httpMessageNotReadableException = new HttpMessageNotReadableException(
-        additionalInfo, precedingException, null);
+    HttpMessageNotReadableException httpMessageNotReadableException = new HttpMessageNotReadableException(additionalInfo, precedingException, null);
     HttpHeaders headers = new HttpHeaders();
     HttpStatusCode httpStatusCode = HttpStatusCode.valueOf(400);
     ServletWebRequest webRequestMock = mock(ServletWebRequest.class);
@@ -117,8 +116,7 @@ class CustomResponseExceptionHandlerTest {
     when(httpServletRequestMock.getRequestURI()).thenReturn("/api/v1/test");
 
     ResponseEntity<Object> responseError = customResponseExceptionHandler
-        .handleHttpMessageNotReadable(httpMessageNotReadableException, headers,
-            httpStatusCode, webRequestMock);
+      .handleHttpMessageNotReadable(httpMessageNotReadableException, headers, httpStatusCode, webRequestMock);
 
     HttpStatusCode responseHttpStatusCode = responseError.getStatusCode();
     ResponseError.ResponseErrorMessage responseErrorMessage = (ResponseError.ResponseErrorMessage) responseError.getBody();
@@ -145,7 +143,7 @@ class CustomResponseExceptionHandlerTest {
 
     when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
     when(bindingResult.getFieldErrors())
-        .thenReturn(new ArrayList<>(Arrays.asList(fieldError1, fieldError12, fieldError2)));
+      .thenReturn(new ArrayList<>(Arrays.asList(fieldError1, fieldError12, fieldError2)));
 
     when(fieldError1.getField()).thenReturn("fieldError1");
     when(fieldError1.getDefaultMessage()).thenReturn("message 1 from fieldError1");
@@ -160,7 +158,7 @@ class CustomResponseExceptionHandlerTest {
     HttpStatusCode httpStatusCode = HttpStatusCode.valueOf(400);
 
     ResponseEntity<Object> responseError = customResponseExceptionHandler
-        .handleMethodArgumentNotValid(methodArgumentNotValidException, headers, httpStatusCode, webRequestMock);
+      .handleMethodArgumentNotValid(methodArgumentNotValidException, headers, httpStatusCode, webRequestMock);
 
     HttpStatusCode responseHttpStatusCode = responseError.getStatusCode();
     ResponseError.ResponseErrorMessage responseErrorMessage = (ResponseError.ResponseErrorMessage) responseError.getBody();

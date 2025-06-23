@@ -8,7 +8,10 @@ import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.exceptions.DataNotFoundException;
 import com.platform.recipe.domain.services.RecipeService;
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -49,8 +53,8 @@ public class RecipeController {
 
   @PutMapping("/{id}")
   public ResponseEntity<RecipeResponse> update(
-      @PathVariable Long id,
-      @Valid @RequestBody RecipeRequest recipeRequest
+    @PathVariable Long id,
+    @Valid @RequestBody RecipeRequest recipeRequest
   ) throws DataNotFoundException {
     log.info("Received request to update recipe [{}]", id);
     RecipeDto recipeDto = objectMapper.convertValue(recipeRequest, RecipeDto.class);
@@ -65,7 +69,7 @@ public class RecipeController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> update(
-      @PathVariable Long id
+    @PathVariable Long id
   ) throws DataNotFoundException {
     log.info("Received request to delete recipe [{}]", id);
 
@@ -77,7 +81,7 @@ public class RecipeController {
 
   @GetMapping("/{id}")
   public ResponseEntity<RecipeResponse> findById(
-      @PathVariable Long id
+    @PathVariable Long id
   ) throws DataNotFoundException {
     log.info("Received request to find recipe [{}]", id);
 
@@ -85,6 +89,44 @@ public class RecipeController {
     RecipeResponse response = objectMapper.convertValue(recipeDto, RecipeResponse.class);
 
     log.info("Recipe with id [{}] successfully found", id);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
+  }
+
+  @GetMapping
+  public ResponseEntity<Page<RecipeResponse>> search(
+    @RequestParam(required = false) Boolean vegetarian,
+    @RequestParam(required = false, defaultValue = "1") int serving,
+    @RequestParam(required = false) List<String> include,
+    @RequestParam(required = false) List<String> exclude,
+    @RequestParam(required = false) String instruction,
+    @RequestParam(required = false) Instant createdAfter,
+    @RequestParam(required = false) Instant createdBefore,
+    @RequestParam(required = false, defaultValue = "0") int page,
+    @RequestParam(required = false, defaultValue = "10") int pageSize,
+    @RequestParam(required = false, defaultValue = "createdAt") String sort
+  ) {
+    log.info("Received request to serch recipe, filters: vegetarian: [{}], serving: [{}], include: [{}],"
+      + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
+        vegetarian, serving, include, exclude, instruction, createdAfter, createdBefore);
+
+    Page<RecipeDto> recipes = recipeService.searchWithFilters(
+      vegetarian,
+      serving,
+      include,
+      exclude,
+      instruction,
+      createdAfter,
+      createdBefore,
+      page,
+      pageSize,
+      sort
+    );
+
+    Page<RecipeResponse> response = recipes.map(dto -> objectMapper.convertValue(dto, RecipeResponse.class));
+
+    log.info("Returning recipe page successfully, filters: vegetarian: [{}], serving: [{}], include: [{}],"
+            + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
+        vegetarian, serving, include, exclude, instruction, createdAfter, createdBefore);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

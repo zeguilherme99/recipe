@@ -16,14 +16,16 @@ public class ResponseError implements Serializable {
   }
 
   public record ResponseErrorMessage(
-      Integer code,
-      String title,
-      String message,
-      List<FieldError> fieldErrors) {
+    Integer code,
+    String title,
+    String message,
+    List<FieldError> fieldErrors
+  ) {
   }
 
   public record FieldError(
-      String name,
-      List<String> details) {
+    String name,
+    List<String> details
+  ) {
   }
 }

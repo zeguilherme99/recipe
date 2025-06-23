@@ -1,6 +1,7 @@
 package com.platform.recipe.adapters.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -168,33 +171,67 @@ class RecipeControllerTest {
     when(recipeService.findById(dto.getId())).thenReturn(dto);
 
     mockMvc.perform(get("/v1/recipes/{id}", dto.getId()))
-        .andExpect(status().isOk())
-        .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+      .andExpect(status().isOk())
+      .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+  }
+
+  @Test
+  void shouldReturn200AndRecipesWhenUsingFilters() throws Exception {
+
+    RecipeDto recipeDto = createDto();
+    Page<RecipeDto> page = new PageImpl<>(List.of(recipeDto));
+    Page<RecipeResponse> expectedResponse = page.map(recipe -> objectMapper.convertValue(recipe, RecipeResponse.class));
+
+    when(recipeService.searchWithFilters(
+      eq(true),
+      eq(1),
+      eq(List.of("Tomato")),
+      eq(List.of("Salt")),
+      eq("bake"),
+      any(),
+      any(),
+      eq(0),
+      eq(10),
+      eq("createdAt")
+    )).thenReturn(page);
+
+    mockMvc.perform(get("/v1/recipes")
+      .param("vegetarian", "true")
+      .param("include", "Tomato")
+      .param("exclude", "Salt")
+      .param("instruction", "bake")
+      .param("page", "0")
+      .param("pageSize", "10")
+      .param("sort", "createdAt")
+      .contentType(MediaType.APPLICATION_JSON))
+    .andExpect(status().isOk())
+    .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
+
   }
 
   private RecipeResponse createResponseFromDto(RecipeDto dto) {
     return new RecipeResponse(
-        dto.getId(),
-        dto.getTitle(),
-        dto.getDescription(),
-        dto.isVegetarian(),
-        dto.getInstructions(),
-        dto.getIngredients(),
-        dto.getCreatedAt(),
-        dto.getUpdatedAt()
+      dto.getId(),
+      dto.getTitle(),
+      dto.getDescription(),
+      dto.isVegetarian(),
+      dto.getInstructions(),
+      dto.getIngredients(),
+      dto.getCreatedAt(),
+      dto.getUpdatedAt()
     );
   }
 
   private RecipeRequest createRequest() {
     return new RecipeRequest(
-        "Feijoada",
-        "description",
-        false,
-        "instructions",
-        List.of(
-            new IngredientRequest(1L, "Brad", 500, "g"),
-            new IngredientRequest(2L, "Bean", 300, "g")
-        )
+      "Feijoada",
+      "description",
+      false,
+      "instructions",
+      List.of(
+        new IngredientRequest(1L, "Brad", 500, "g"),
+        new IngredientRequest(2L, "Bean", 300, "g")
+      )
     );
   }
 

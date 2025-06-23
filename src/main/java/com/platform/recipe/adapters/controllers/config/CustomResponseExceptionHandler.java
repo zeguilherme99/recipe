@@ -37,8 +37,8 @@ public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandl
       String errorMessage = fieldErrorFound.getDefaultMessage();
 
       Optional<ResponseError.FieldError> fieldErrorIfFound = fieldsErrors.stream()
-          .filter(fieldError -> fieldName.equals(fieldError.name()))
-          .findAny();
+        .filter(fieldError -> fieldName.equals(fieldError.name()))
+        .findAny();
 
       if (fieldErrorIfFound.isPresent()) {
         fieldErrorIfFound.get().details().add(errorMessage);

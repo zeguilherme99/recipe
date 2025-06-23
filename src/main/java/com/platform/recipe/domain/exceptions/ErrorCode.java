@@ -1,6 +1,5 @@
 package com.platform.recipe.domain.exceptions;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
