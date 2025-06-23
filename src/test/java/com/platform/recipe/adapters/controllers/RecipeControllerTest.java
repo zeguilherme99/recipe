@@ -253,8 +253,8 @@ class RecipeControllerTest {
 
     mockMvc.perform(get("/v1/recipes")
       .param("vegetarian", "true")
-      .param("include", "Tomato")
-      .param("exclude", "Salt")
+      .param("includedIngredients", "Tomato")
+      .param("excludedIngredients", "Salt")
       .param("instruction", "bake")
       .param("page", "0")
       .param("pageSize", "10")

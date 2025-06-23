@@ -125,8 +125,8 @@ public class RecipeController {
   public ResponseEntity<Page<RecipeResponse>> search(
     @RequestParam(required = false) Boolean vegetarian,
     @RequestParam(required = false, defaultValue = "1") int servings,
-    @RequestParam(required = false) List<String> include,
-    @RequestParam(required = false) List<String> exclude,
+    @RequestParam(required = false) List<String> includedIngredients,
+    @RequestParam(required = false) List<String> excludedIngredients,
     @RequestParam(required = false) String instruction,
     @RequestParam(required = false) Instant createdAfter,
     @RequestParam(required = false) Instant createdBefore,
@@ -136,13 +136,13 @@ public class RecipeController {
   ) {
     log.info("Received request to serch recipe, filters: vegetarian: [{}], serving: [{}], include: [{}],"
       + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
-        vegetarian, servings, include, exclude, instruction, createdAfter, createdBefore);
+        vegetarian, servings, includedIngredients, excludedIngredients, instruction, createdAfter, createdBefore);
 
     Page<RecipeDto> recipes = recipeService.searchWithFilters(
       vegetarian,
       servings,
-      include,
-      exclude,
+      includedIngredients,
+      excludedIngredients,
       instruction,
       createdAfter,
       createdBefore,
@@ -155,7 +155,7 @@ public class RecipeController {
 
     log.info("Returning recipe page successfully, filters: vegetarian: [{}], serving: [{}], include: [{}],"
       + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
-        vegetarian, servings, include, exclude, instruction, createdAfter, createdBefore);
+        vegetarian, servings, includedIngredients, excludedIngredients, instruction, createdAfter, createdBefore);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }
