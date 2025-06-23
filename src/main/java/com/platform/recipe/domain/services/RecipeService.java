@@ -14,7 +14,7 @@ public interface RecipeService {
   RecipeDto findById(Long id) throws DataNotFoundException;
   Page<RecipeDto> searchWithFilters(
     Boolean vegetarian,
-    int serving,
+    int servings,
     List<String> includedIngredients,
     List<String> excludedIngredients,
     String instruction,

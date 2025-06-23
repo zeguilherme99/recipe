@@ -1,12 +1,17 @@
 package com.platform.recipe.adapters.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.platform.recipe.adapters.controllers.config.ResponseError;
 import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.RecipeDto;
 import com.platform.recipe.domain.exceptions.DataNotFoundException;
 import com.platform.recipe.domain.services.RecipeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
@@ -37,6 +42,18 @@ public class RecipeController {
     this.objectMapper = objectMapper;
   }
 
+  @Operation(summary = "Create recipes", description = "Create recipes")
+  @ApiResponse(responseCode = "201", description = "Success")
+  @ApiResponse(
+    responseCode = "400",
+    description = "Validation error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "Unexpected error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
   @PostMapping
   public ResponseEntity<RecipeIdResponse> create(@Valid @RequestBody RecipeRequest recipeRequest) {
     log.info("Received request to create recipe [{}]", recipeRequest.getTitle());
@@ -51,6 +68,23 @@ public class RecipeController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @Operation(summary = "Update recipes id", description = "Update recipes with id")
+  @ApiResponse(responseCode = "200", description = "Success")
+  @ApiResponse(
+    responseCode = "400",
+    description = "Invalid data error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "404",
+    description = "Not found error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "Unexpected error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
   @PutMapping("/{id}")
   public ResponseEntity<RecipeResponse> update(
     @PathVariable Long id,
@@ -67,8 +101,25 @@ public class RecipeController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
+  @Operation(summary = "Delete recipes id", description = "Delete recipes with id")
+  @ApiResponse(responseCode = "204", description = "Success")
+  @ApiResponse(
+    responseCode = "400",
+    description = "Invalid data error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "404",
+    description = "Not found error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "Unexpected error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> update(
+  public ResponseEntity<Void> delete(
     @PathVariable Long id
   ) throws DataNotFoundException {
     log.info("Received request to delete recipe [{}]", id);
@@ -79,6 +130,23 @@ public class RecipeController {
     return ResponseEntity.noContent().build();
   }
 
+  @Operation(summary = "Search recipes id", description = "Search recipes with id")
+  @ApiResponse(responseCode = "200", description = "Success")
+  @ApiResponse(
+    responseCode = "400",
+    description = "Invalid data error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "404",
+    description = "Not found error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "Unexpected error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
   @GetMapping("/{id}")
   public ResponseEntity<RecipeResponse> findById(
     @PathVariable Long id
@@ -92,10 +160,22 @@ public class RecipeController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
+  @Operation(summary = "Search for recipes", description = "Search recipes with optional filters")
+  @ApiResponse(responseCode = "200", description = "Success")
+  @ApiResponse(
+    responseCode = "400",
+    description = "Validation error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "Unexpected error",
+    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
+  )
   @GetMapping
   public ResponseEntity<Page<RecipeResponse>> search(
     @RequestParam(required = false) Boolean vegetarian,
-    @RequestParam(required = false, defaultValue = "1") int serving,
+    @RequestParam(required = false, defaultValue = "1") int servings,
     @RequestParam(required = false) List<String> include,
     @RequestParam(required = false) List<String> exclude,
     @RequestParam(required = false) String instruction,
@@ -107,11 +187,11 @@ public class RecipeController {
   ) {
     log.info("Received request to serch recipe, filters: vegetarian: [{}], serving: [{}], include: [{}],"
       + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
-        vegetarian, serving, include, exclude, instruction, createdAfter, createdBefore);
+        vegetarian, servings, include, exclude, instruction, createdAfter, createdBefore);
 
     Page<RecipeDto> recipes = recipeService.searchWithFilters(
       vegetarian,
-      serving,
+      servings,
       include,
       exclude,
       instruction,
@@ -125,8 +205,8 @@ public class RecipeController {
     Page<RecipeResponse> response = recipes.map(dto -> objectMapper.convertValue(dto, RecipeResponse.class));
 
     log.info("Returning recipe page successfully, filters: vegetarian: [{}], serving: [{}], include: [{}],"
-            + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
-        vegetarian, serving, include, exclude, instruction, createdAfter, createdBefore);
+      + " exclude: [{}], instruction: [{}], createdAfter: [{}], createdBefore: [{}]",
+        vegetarian, servings, include, exclude, instruction, createdAfter, createdBefore);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

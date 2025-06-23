@@ -69,7 +69,7 @@ public class RecipeServiceImp implements RecipeService {
   @Override
   public Page<RecipeDto> searchWithFilters(
     Boolean vegetarian,
-    int serving,
+    int servings,
     List<String> includedIngredients,
     List<String> excludedIngredients,
     String instruction,
@@ -80,7 +80,7 @@ public class RecipeServiceImp implements RecipeService {
     String sort
   ) {
 
-    PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by("createdAt").descending());
+    PageRequest pageRequest = PageRequest.of(page, pageSize, Sort.by(sort).descending());
 
     Page<Recipe> recipePage = recipeJpaRepository.searchWithFilters(
       vegetarian,
@@ -92,23 +92,21 @@ public class RecipeServiceImp implements RecipeService {
       pageRequest
     );
 
-    return convertPage(recipePage, serving);
+    return convertPage(recipePage, servings);
   }
 
-  private Page<RecipeDto> convertPage(Page<Recipe> recipePage, int serving) {
+  private Page<RecipeDto> convertPage(Page<Recipe> recipePage, int servings) {
     List<Long> recipeIds = recipePage.getContent().stream().map(Recipe::getId).toList();
     List<Ingredient> ingredients = ingredientJpaRepository.findByRecipeIdIn(recipeIds);
     Map<Long, List<Ingredient>> grouped = ingredients.stream()
       .collect(Collectors.groupingBy(i -> i.getRecipe().getId()));
 
-    recipePage.getContent().forEach(recipe -> {
-      recipe.setIngredients(grouped.getOrDefault(recipe.getId(), List.of()));
-    });
+    recipePage.getContent().forEach(recipe -> recipe.setIngredients(grouped.getOrDefault(recipe.getId(), List.of())));
 
     return recipePage.map(recipe -> {
-      if (serving > 1) {
+      if (servings > 1) {
         recipe.getIngredients().forEach(
-          ingredient -> ingredient.setQuantity(ingredient.getQuantity() * serving)
+          ingredient -> ingredient.setQuantity(ingredient.getQuantity() * servings)
         );
       }
 
