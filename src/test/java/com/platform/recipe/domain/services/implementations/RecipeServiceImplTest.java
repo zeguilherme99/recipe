@@ -34,10 +34,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @ExtendWith(MockitoExtension.class)
-class RecipeServiceImpTest {
+class RecipeServiceImplTest {
 
   @InjectMocks
-  private RecipeServiceImp recipeService;
+  private RecipeServiceImpl recipeService;
 
   @Mock
   private RecipeJpaRepository recipeJpaRepository;

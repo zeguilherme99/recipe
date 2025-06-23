@@ -22,9 +22,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Slf4j
-@Service("recipeServiceImp")
+@Service("recipeServiceImpl")
 @RequiredArgsConstructor
-public class RecipeServiceImp implements RecipeService {
+public class RecipeServiceImpl implements RecipeService {
 
   private final RecipeJpaRepository recipeJpaRepository;
   private final IngredientJpaRepository ingredientJpaRepository;
