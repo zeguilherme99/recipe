@@ -12,9 +12,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class IngredientRequest {
-
-  private Long id;
+public class IngredientCreateRequest {
 
   @NotBlank(message = "Name is required.")
   @Size(min = 3, max = 255, message = "Name size must be between 3 and 255")

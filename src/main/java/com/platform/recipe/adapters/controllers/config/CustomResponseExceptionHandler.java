@@ -26,8 +26,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
   @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+    MethodArgumentNotValidException ex,
+    HttpHeaders headers,
+    HttpStatusCode status,
+    WebRequest request
+  ) {
     String endpoint = ((ServletWebRequest) request).getRequest().getRequestURI();
 
     List<ResponseError.FieldError> fieldsErrors = new ArrayList<>();
@@ -53,8 +57,10 @@ public class CustomResponseExceptionHandler extends ResponseEntityExceptionHandl
   }
 
   @Override
-  public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers,
-                                                             HttpStatusCode status, WebRequest request) {
+  public ResponseEntity<Object> handleHttpMessageNotReadable(
+    HttpMessageNotReadableException ex, HttpHeaders headers,
+    HttpStatusCode status, WebRequest request
+  ) {
     String endpoint = ((ServletWebRequest) request).getRequest().getRequestURI();
 
     log.info("Invalid request to [{}]. Error: [{}]", endpoint, ex.getMessage());

@@ -120,13 +120,13 @@ class CustomRecipeJpaRepositoryImplTest {
   void shouldReturnRecipesWithExcludedIngredientsSuccessfully() {
 
     Page<Recipe> result = customRecipeJpaRepository.searchWithFilters(
-        null,
-        null,
-        List.of("Lettuce"),
-        null,
-        null,
-        null,
-        PageRequest.of(0, 10)
+      null,
+      null,
+      List.of("Lettuce"),
+      null,
+      null,
+      null,
+      PageRequest.of(0, 10)
     );
 
     assertNotNull(result);

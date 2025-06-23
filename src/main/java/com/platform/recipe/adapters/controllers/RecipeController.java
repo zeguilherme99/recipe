@@ -2,7 +2,8 @@ package com.platform.recipe.adapters.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.platform.recipe.adapters.controllers.config.ResponseError;
-import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.RecipeCreateRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.RecipeUpdateRequest;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.RecipeDto;
@@ -44,18 +45,10 @@ public class RecipeController {
 
   @Operation(summary = "Create recipes", description = "Create recipes")
   @ApiResponse(responseCode = "201", description = "Success")
-  @ApiResponse(
-    responseCode = "400",
-    description = "Validation error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "Unexpected error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
+  @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "500", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
   @PostMapping
-  public ResponseEntity<RecipeIdResponse> create(@Valid @RequestBody RecipeRequest recipeRequest) {
+  public ResponseEntity<RecipeIdResponse> create(@Valid @RequestBody RecipeCreateRequest recipeRequest) {
     log.info("Received request to create recipe [{}]", recipeRequest.getTitle());
     RecipeDto recipeDto = objectMapper.convertValue(recipeRequest, RecipeDto.class);
 
@@ -70,25 +63,13 @@ public class RecipeController {
 
   @Operation(summary = "Update recipes id", description = "Update recipes with id")
   @ApiResponse(responseCode = "200", description = "Success")
-  @ApiResponse(
-    responseCode = "400",
-    description = "Invalid data error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "404",
-    description = "Not found error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "Unexpected error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
+  @ApiResponse(responseCode = "400", description = "Invalid data error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "404", description = "Not found error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "500", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
   @PutMapping("/{id}")
   public ResponseEntity<RecipeResponse> update(
     @PathVariable Long id,
-    @Valid @RequestBody RecipeRequest recipeRequest
+    @Valid @RequestBody RecipeUpdateRequest recipeRequest
   ) throws DataNotFoundException {
     log.info("Received request to update recipe [{}]", id);
     RecipeDto recipeDto = objectMapper.convertValue(recipeRequest, RecipeDto.class);
@@ -103,21 +84,9 @@ public class RecipeController {
 
   @Operation(summary = "Delete recipes id", description = "Delete recipes with id")
   @ApiResponse(responseCode = "204", description = "Success")
-  @ApiResponse(
-    responseCode = "400",
-    description = "Invalid data error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "404",
-    description = "Not found error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "Unexpected error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
+  @ApiResponse(responseCode = "400", description = "Invalid data error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "404", description = "Not found error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "500", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(
     @PathVariable Long id
@@ -132,21 +101,9 @@ public class RecipeController {
 
   @Operation(summary = "Search recipes id", description = "Search recipes with id")
   @ApiResponse(responseCode = "200", description = "Success")
-  @ApiResponse(
-    responseCode = "400",
-    description = "Invalid data error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "404",
-    description = "Not found error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "Unexpected error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
+  @ApiResponse(responseCode = "400", description = "Invalid data error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "404", description = "Not found error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "500", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
   @GetMapping("/{id}")
   public ResponseEntity<RecipeResponse> findById(
     @PathVariable Long id
@@ -162,16 +119,8 @@ public class RecipeController {
 
   @Operation(summary = "Search for recipes", description = "Search recipes with optional filters")
   @ApiResponse(responseCode = "200", description = "Success")
-  @ApiResponse(
-    responseCode = "400",
-    description = "Validation error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "Unexpected error",
-    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class))
-  )
+  @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
+  @ApiResponse(responseCode = "500", description = "Unexpected error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseError.ResponseErrorMessage.class)))
   @GetMapping
   public ResponseEntity<Page<RecipeResponse>> search(
     @RequestParam(required = false) Boolean vegetarian,

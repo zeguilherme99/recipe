@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RecipeRequest {
+public class RecipeUpdateRequest {
 
   @NotBlank(message = "Title is required.")
   @Size(min = 3, max = 255, message = "Title size must be between 3 and 255")
@@ -31,5 +31,5 @@ public class RecipeRequest {
   @NotNull(message = "The ingredients list is required.")
   @Size(min = 1, message = "The recipe must contain 1 ingredient at least.")
   @Valid
-  private List<IngredientRequest> ingredients;
+  private List<IngredientUpdateRequest> ingredients;
 }

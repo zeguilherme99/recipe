@@ -13,8 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.platform.recipe.adapters.controllers.dtos.request.IngredientRequest;
-import com.platform.recipe.adapters.controllers.dtos.request.RecipeRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.IngredientCreateRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.IngredientUpdateRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.RecipeCreateRequest;
+import com.platform.recipe.adapters.controllers.dtos.request.RecipeUpdateRequest;
+import com.platform.recipe.adapters.controllers.dtos.response.IngredientResponse;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeIdResponse;
 import com.platform.recipe.adapters.controllers.dtos.response.RecipeResponse;
 import com.platform.recipe.domain.dtos.IngredientDto;
@@ -46,63 +49,116 @@ class RecipeControllerTest {
   @MockitoBean
   private RecipeService recipeService;
 
-  private static Stream<Arguments> invalidRecipeRequests() {
+  private static Stream<Arguments> invalidRecipeCreateRequests() {
     return Stream.of(
-        Arguments.of(
-            new RecipeRequest(
-              " ",
-              "Some description",
-              true,
-              "Instructions",
-              List.of(new IngredientRequest(1L,"Flour", 200, "g"))
-            )
-        ),
-        Arguments.of(
-            new RecipeRequest(
-                "a",
-                "Some description",
-                true,
-                "Instructions",
-                List.of(new IngredientRequest(2L,"Flour", 200, "g"))
-            )
-        ),
-        Arguments.of(
-            new RecipeRequest(
-              "Valid title",
-              "Some description",
-              true,
-              "  ",
-              List.of(new IngredientRequest(3L,"Flour", 200, "g"))
-            )
-        ),
-        Arguments.of(
-          new RecipeRequest(
-              "Valid title",
-              "Some description",
-              true,
-              "Instructions",
-              List.of(
-                  new IngredientRequest(4L,"  ", 500, "g"),
-                  new IngredientRequest(5L,"Bean", 300, "g")
-              )
-          )
-        ),
-        Arguments.of(
-            new RecipeRequest(
-              "Valid title",
-              "Some description",
-              true,
-              "Instructions",
-              List.of()
-            )
+      Arguments.of(
+        new RecipeCreateRequest(
+          " ",
+          "Some description",
+          true,
+          "Instructions",
+          List.of(new IngredientCreateRequest("Flour", 200, "g"))
         )
+      ),
+      Arguments.of(
+        new RecipeCreateRequest(
+            "a",
+            "Some description",
+            true,
+            "Instructions",
+            List.of(new IngredientCreateRequest("Flour", 200, "g"))
+        )
+      ),
+      Arguments.of(
+        new RecipeCreateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "  ",
+          List.of(new IngredientCreateRequest("Flour", 200, "g"))
+        )
+      ),
+      Arguments.of(
+        new RecipeCreateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "Instructions",
+          List.of(
+            new IngredientCreateRequest("  ", 500, "g"),
+            new IngredientCreateRequest("Bean", 300, "g")
+          )
+        )
+      ),
+      Arguments.of(
+        new RecipeCreateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "Instructions",
+          List.of()
+        )
+      )
+    );
+  }
+
+  private static Stream<Arguments> invalidRecipeUpdateRequests() {
+    return Stream.of(
+      Arguments.of(
+        new RecipeUpdateRequest(
+          " ",
+          "Some description",
+          true,
+          "Instructions",
+          List.of(new IngredientUpdateRequest(1L,"Flour", 200, "g"))
+        )
+      ),
+      Arguments.of(
+        new RecipeUpdateRequest(
+          "a",
+          "Some description",
+          true,
+          "Instructions",
+          List.of(new IngredientUpdateRequest(2L,"Flour", 200, "g"))
+        )
+      ),
+      Arguments.of(
+        new RecipeUpdateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "  ",
+          List.of(new IngredientUpdateRequest(3L,"Flour", 200, "g"))
+        )
+      ),
+      Arguments.of(
+        new RecipeUpdateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "Instructions",
+          List.of(
+            new IngredientUpdateRequest(4L,"  ", 500, "g"),
+            new IngredientUpdateRequest(5L,"Bean", 300, "g")
+          )
+        )
+      ),
+      Arguments.of(
+        new RecipeUpdateRequest(
+          "Valid title",
+          "Some description",
+          true,
+          "Instructions",
+          List.of()
+        )
+      )
     );
   }
 
   @Test
   void shouldReturnCreatedWithIdSuccessfully() throws Exception {
     Long id = 42L;
-    RecipeRequest recipeRequest = createRequest();
+    RecipeCreateRequest recipeRequest = createRequest();
     RecipeIdResponse expectedResponse = new RecipeIdResponse(id);
     when(recipeService.create(any(RecipeDto.class))).thenReturn(id);
 
@@ -116,7 +172,7 @@ class RecipeControllerTest {
 
   @Test
   void shouldUpdateRecipeSuccessfully() throws Exception {
-    RecipeRequest request = createRequest();
+    RecipeUpdateRequest request = createUpdateRequest();
     RecipeDto dto = createDto();
     RecipeResponse expectedResponse = createResponseFromDto(dto);
 
@@ -132,8 +188,8 @@ class RecipeControllerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("invalidRecipeRequests")
-  void shouldReturn400ForInvalidUpdateRequests(RecipeRequest invalidRequest) throws Exception {
+  @MethodSource("invalidRecipeUpdateRequests")
+  void shouldReturn400ForInvalidUpdateRequests(RecipeUpdateRequest invalidRequest) throws Exception {
     mockMvc.perform(put("/v1/recipes/{id}", 1)
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
@@ -143,8 +199,8 @@ class RecipeControllerTest {
   }
 
   @ParameterizedTest
-  @MethodSource("invalidRecipeRequests")
-  void shouldReturn400ForInvalidCreateRequests(RecipeRequest invalidRequest) throws Exception {
+  @MethodSource("invalidRecipeCreateRequests")
+  void shouldReturn400ForInvalidCreateRequests(RecipeCreateRequest invalidRequest) throws Exception {
     mockMvc.perform(post("/v1/recipes")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(invalidRequest)))
@@ -158,7 +214,7 @@ class RecipeControllerTest {
     Long id = 1L;
 
     mockMvc.perform(delete("/v1/recipes/{id}", id))
-        .andExpect(status().isNoContent());
+      .andExpect(status().isNoContent());
 
     verify(recipeService).deleteById(id);
   }
@@ -210,27 +266,50 @@ class RecipeControllerTest {
   }
 
   private RecipeResponse createResponseFromDto(RecipeDto dto) {
+    List<IngredientResponse> ingredientResponses = dto.getIngredients()
+      .stream()
+      .map(ingredientDto -> new IngredientResponse(
+        ingredientDto.getId(),
+        ingredientDto.getName(),
+        ingredientDto.getQuantity(),
+        ingredientDto.getUnit()
+      ))
+      .toList();
+
     return new RecipeResponse(
       dto.getId(),
       dto.getTitle(),
       dto.getDescription(),
       dto.isVegetarian(),
       dto.getInstructions(),
-      dto.getIngredients(),
+      ingredientResponses,
       dto.getCreatedAt(),
       dto.getUpdatedAt()
     );
   }
 
-  private RecipeRequest createRequest() {
-    return new RecipeRequest(
+  private RecipeCreateRequest createRequest() {
+    return new RecipeCreateRequest(
       "Feijoada",
       "description",
       false,
       "instructions",
       List.of(
-        new IngredientRequest(1L, "Brad", 500, "g"),
-        new IngredientRequest(2L, "Bean", 300, "g")
+        new IngredientCreateRequest("Brad", 500, "g"),
+        new IngredientCreateRequest("Bean", 300, "g")
+      )
+    );
+  }
+
+  private RecipeUpdateRequest createUpdateRequest() {
+    return new RecipeUpdateRequest(
+      "Feijoada",
+      "description",
+      false,
+      "instructions",
+      List.of(
+        new IngredientUpdateRequest(1L,"Brad", 500, "g"),
+        new IngredientUpdateRequest(2L, "Bean", 300, "g")
       )
     );
   }
