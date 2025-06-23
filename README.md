@@ -1,6 +1,6 @@
 # 🍽️ Recipe API
 
-A RESTful API built with Java Spring Boot for managing cooking recipes. This project allows users to create, search, update, and delete recipes while supporting flexible filters and structured data handling.
+A RESTful API built with Java Spring Boot for managing cooking recipes.
 
 ## 🧠 Project Overview
 The API allows users to:
